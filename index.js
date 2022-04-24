@@ -1,6 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 const { MongoClient, ServerApiVersion } = require('mongodb');
+const ObjectId = require('mongodb').ObjectId;
+
 const app = express();
 const port = process.env.PORT || 5000;
 
@@ -11,7 +13,6 @@ app.use(express.json());
 // user: dbuser1
 // password: v1Lv4PCTOmu6zfD2
 
-
 const uri = "mongodb+srv://dbuser1:v1Lv4PCTOmu6zfD2@cluster0.pta9f.mongodb.net/myFirstDatabase?retryWrites=true&w=majority";
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
@@ -20,12 +21,13 @@ async function run() {
         await client.connect();
         const userCollection = client.db("foodExpress").collection("users");
 
+        // get users: for get the existing user
         app.get('/user', async (req, res) => {
             const query = {}
             const cursor = userCollection.find(query);
             const users = await cursor.toArray();
             res.send(users);
-        })
+        });
         
         // post user: add a new user
         app.post('/user', async (req,res) => {
@@ -33,7 +35,14 @@ async function run() {
             console.log('adding new user', newUser);
             const result = await userCollection.insert(newUser);
             res.send(result);
+        });
+
+        //delete a user
+        app.delete('/user/:id', async (req,res) => {
+            const id = res.params.id;
+            const query = {_id: ObjectId(id)};
         })
+
     }
     finally {
         // await client.close();
